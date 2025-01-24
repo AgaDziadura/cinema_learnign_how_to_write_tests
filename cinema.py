@@ -174,8 +174,8 @@ if __name__ == "__main__":
             print(hall.reserve_seat(number=client_number, row=client_row, age=client_age))
 
             # Option to reserve another seat
-            continuar = input("Do you want to reserve another seat? (y/n): ")
-            if continuar.lower() != 'y':
+            again= input("Do you want to reserve another seat? (y/n): ")
+            if again.lower() != 'y':
                 break
 
     # Reserve a specific seat
