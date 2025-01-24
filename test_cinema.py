@@ -1,5 +1,5 @@
 import unittest
-from cinema import Seat, CinemaHall  # Assuming you renamed the file to cinema.py
+from cinema import Seat, CinemaHall
 
 
 class BookingSystemTests(unittest.TestCase):
