@@ -1,7 +1,7 @@
 """
 I assume that the following application is intended for cinema workers and not for online purchases since not everyone
-should be able to freely add seats or apply discounts by entering their age without showing an accreditation document.
-Additionally,to avoid errors, it is assumed that both the reservation and the operation of showing seats works for the
+should be able to freely add seats or apply for discounts by entering their age without showing an accreditation document.
+Additionally, to avoid errors, it is assumed that both the reservation and the operation of showing seats work for the
 current date/day.
 """
 
@@ -11,14 +11,10 @@ from datetime import datetime
 class Seat:
     def __init__(self, number, row):
         # First we make sure that the number entered for both the seat number and row are integers greater than 0.
-        try:
-            if not isinstance(number, int) or number <= 0:
-                raise ValueError("The seat number must be a positive integer.")
-            if not isinstance(row, int) or row <= 0:
-                raise ValueError("The seat row must be a positive integer.")
-        except ValueError as e:
-            print(f"Error: {e}")
-            raise
+        if not isinstance(number, int) or number <= 0:
+            raise ValueError("The seat number must be a positive integer.")
+        if not isinstance(row, int) or row <= 0:
+            raise ValueError("The seat row must be a positive integer.")
         self.__number = number
         self.__row = row
         self.__reserved = False
@@ -47,15 +43,10 @@ class CinemaHall:
     def __init__(self, rows, seats_per_row):
         # First we make sure that the number entered for both the number of seats per row and the total number of rows
         # are integers greater than 0.
-        try:
-            if not isinstance(seats_per_row, int) or seats_per_row <= 0:
-                raise ValueError("The number of seats in each row must be a positive integer.")
-            if not isinstance(rows, int) or rows <= 0:
-                raise ValueError("The total number of rows must be a positive integer.")
-        except ValueError as e:
-            print(f"Error: {e}")
-            raise
-
+        if not isinstance(seats_per_row, int) or seats_per_row <= 0:
+            raise ValueError("The number of seats in each row must be a positive integer.")
+        if not isinstance(rows, int) or rows <= 0:
+            raise ValueError("The total number of rows must be a positive integer.")
         # We build a list that will contain all the seats in all the rows in the movie theater
         self.__seats = []
         for row in range(1, rows + 1):
@@ -72,76 +63,66 @@ class CinemaHall:
                      base_price=10):  # default base price: €10
         # For the discount to be applied automatically if the day is Wednesday, we take the current day using the
         # datetime library
-        try:
-            seat = self.search_seat(number, row)
-            if seat:
-                if not seat.is_reserved():
-                    price = base_price
-                    if day_of_week == 2:  # Wednesday
-                        price *= 0.8
-                    if age > 65:
-                        price *= 0.7
-                    seat.set_price(price)
-                    seat.set_reserved(True)
-                    return f"Seat {number} in row {row} has been reserved. Price: {price:.2f}€"
-                else:
-                    raise ValueError("The seat is already reserved.")
+        seat = self.search_seat(number, row)
+        if seat:
+            if not seat.is_reserved():
+                price = base_price
+                if day_of_week == 2:  # Wednesday
+                    price *= 0.8
+                if age > 65:
+                    price *= 0.7
+                seat.set_price(price)
+                seat.set_reserved(True)
+                return f"Seat {number} in row {row} has been reserved. Price: {price:.2f}€"
             else:
-                raise ValueError("The seat does not exist.")
-        except ValueError as e:
-            print(f"Error: {e}")
-            raise
+                raise ValueError("The seat is already reserved.")
+        else:
+            raise ValueError("The seat does not exist.")
+
 
     def cancel_reservation(self, number, row):
-        try:
-            seat = self.search_seat(number, row)
-            if seat:
-                if seat.is_reserved():
-                    seat.set_reserved(False)
-                    seat.set_price(0)
-                    return f"Reservation for seat {number} in row {row} has been canceled."
-                else:
-                    raise ValueError("The seat is not reserved.")
+        seat = self.search_seat(number, row)
+        if seat:
+            if seat.is_reserved():
+                seat.set_reserved(False)
+                seat.set_price(0)
+                return f"Reservation for seat {number} in row {row} has been canceled."
             else:
-                raise ValueError("The seat does not exist.")
-        except ValueError as e:
-            print(f"Error: {e}")
-            raise
+                raise ValueError("The seat is not reserved.")
+        else:
+            raise ValueError("The seat does not exist.")
+
 
     def add_seat(self, seat):
-        try:
-            # Verify if a seat like this already exists
-            for a in self.__seats:
-                if a.get_number() == seat.get_number() and a.get_row() == seat.get_row():
-                    raise ValueError("The seat is already registered in the hall.")
+        # Verify if a seat like this already exists
+        for a in self.__seats:
+            if a.get_number() == seat.get_number() and a.get_row() == seat.get_row():
+                raise ValueError("The seat is already registered in the hall.")
 
-            # Get number of seats per row. It is decided to leave the possibility of adding seats only in existing rows
-            # and as a continuation of a row.
-            if self.__seats:
-                last_row = self.__seats[-1].get_row()
-                if seat.get_row() > last_row:
-                    raise ValueError(
-                        f"The row number is greater than the total number of rows in the hall. Creating new rows is not allowed."
-                        f"Seats can be added in rows from {self.__seats[0].get_row()} to {last_row}.")
-                last_number = self.__seats[-1].get_number()
-                if seat.get_number() != last_number + 1:
-                    raise ValueError(
-                        f"The seat number is not the next in the row. It is only allowed to add seats in order. "
-                        f"The number of the next available seat is: {last_number + 1}.")
+        # Get number of seats per row. It is decided to leave the possibility of adding seats only in existing rows
+        # and as a continuation of a row.
+        if self.__seats:
+            last_row = self.__seats[-1].get_row()
+            if seat.get_row() > last_row:
+                raise ValueError(
+                    f"The row number is greater than the total number of rows in the hall. Creating new rows is not allowed."
+                    f"Seats can be added in rows from {self.__seats[0].get_row()} to {last_row}.")
+            last_number = self.__seats[-1].get_number()
+            if seat.get_number() != last_number + 1:
+                raise ValueError(
+                    f"The seat number is not the next in the row. It is only allowed to add seats in order. "
+                    f"The number of the next available seat is: {last_number + 1}.")
 
-            # Insert the seat in the correct position in the seat list
-            position = 0
-            for a in self.__seats:
-                if seat.get_row() < a.get_row() or (
-                        seat.get_row() == a.get_row() and seat.get_number() < a.get_number()):
-                    break
-                position += 1
+        # Insert the seat in the correct position in the seat list
+        position = 0
+        for a in self.__seats:
+            if seat.get_row() < a.get_row() or (
+                    seat.get_row() == a.get_row() and seat.get_number() < a.get_number()):
+                break
+            position += 1
 
-            self.__seats.insert(position, seat)
-            return f"Seat {seat.get_number()} in row {seat.get_row()} has been added."
-        except ValueError as e:
-            print(f"Error: {e}")
-            raise
+        self.__seats.insert(position, seat)
+        return f"Seat {seat.get_number()} in row {seat.get_row()} has been added."
 
     def show_seats(self, day_of_week=datetime.today().weekday(), base_price=10):
         # We create a list of all the seats to show their availability and price
@@ -178,28 +159,24 @@ if __name__ == "__main__":
         hall = CinemaHall(5, 5)  # Create an instance of CinemaHall
 
         while True:
-            try:
-                client_number = int(input("Enter the seat number: "))
-                client_row = int(input("Enter the seat row: "))
-                client_age = int(input("Enter the age: "))
+            client_number = int(input("Enter the seat number: "))
+            client_row = int(input("Enter the seat row: "))
+            client_age = int(input("Enter the age: "))
 
-                # Input validation
-                if not 1 <= client_number <= hall.get_seats_per_row():
-                    raise ValueError("Invalid seat number.")
-                if not 1 <= client_row <= hall.get_rows():
-                    raise ValueError("Invalid seat row.")
-                if not 0 <= client_age <= 120:  # Reasonable age range
-                    raise ValueError("Invalid age.")
+            # Input validation
+            if not 1 <= client_number <= hall.get_seats_per_row():
+                raise ValueError("Invalid seat number.")
+            if not 1 <= client_row <= hall.get_rows():
+                raise ValueError("Invalid seat row.")
+            if not 0 <= client_age <= 120:  # Reasonable age range
+                raise ValueError("Invalid age.")
 
-                print(hall.reserve_seat(number=client_number, row=client_row, age=client_age))
+            print(hall.reserve_seat(number=client_number, row=client_row, age=client_age))
 
-                # Option to reserve another seat
-                continuar = input("Do you want to reserve another seat? (y/n): ")
-                if continuar.lower() != 'y':
-                    break
-
-            except ValueError as e:
-                print(f"Error: {e}")
+            # Option to reserve another seat
+            continuar = input("Do you want to reserve another seat? (y/n): ")
+            if continuar.lower() != 'y':
+                break
 
     # Reserve a specific seat
     print(hall.reserve_seat(number=5, row=5, age=70))
